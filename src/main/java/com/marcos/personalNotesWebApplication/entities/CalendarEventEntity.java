@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,11 +41,11 @@ public class CalendarEventEntity {
 
     @NotNull
     @Column(name = "start_time", nullable = false)
-    private Instant startTime;
+    private Date startTime;
 
     @NotNull
     @Column(name = "end_time", nullable = false)
-    private Instant endTime;
+    private Date endTime;
 
     @Column(name = "google_calendar_id")
     private String googleCalendarId;
@@ -90,7 +91,7 @@ public class CalendarEventEntity {
 
     @PrePersist
     protected void onCreate() {
-        if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
+        if (startTime != null && endTime != null && startTime.after(endTime)) {
             throw new IllegalStateException("Start time must be before end time");
         }
     }

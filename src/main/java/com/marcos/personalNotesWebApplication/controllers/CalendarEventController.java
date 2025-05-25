@@ -1,6 +1,7 @@
 package com.marcos.personalNotesWebApplication.controllers;
 
 import com.marcos.personalNotesWebApplication.dtos.request.CalendarEventRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.CalendarEventUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.request.ReminderRequestDto;
 import com.marcos.personalNotesWebApplication.dtos.response.CalendarEventResponseDto;
 import com.marcos.personalNotesWebApplication.dtos.response.ReminderResponseDto;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/calendar-events")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:4200", "http://localhost:5173"})
 public class CalendarEventController {
 
     private final CalendarEventService calendarEventService;
@@ -49,10 +51,9 @@ public class CalendarEventController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("@calendarEventService.isEventOwner(#id, principal.username)")
     public ResponseEntity<CalendarEventResponseDto> updateEvent(
             @PathVariable UUID id,
-            @Valid @RequestBody CalendarEventRequestDto request) {
+            @Valid @RequestBody CalendarEventUpdateDto request) {
         return ResponseEntity.ok(calendarEventService.updateEvent(id, request));
     }
 

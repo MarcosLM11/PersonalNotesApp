@@ -1,6 +1,7 @@
 package com.marcos.personalNotesWebApplication.mapper;
 
 import com.marcos.personalNotesWebApplication.dtos.request.CalendarEventRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.CalendarEventUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.CalendarEventResponseDto;
 import com.marcos.personalNotesWebApplication.entities.CalendarEventEntity;
 import com.marcos.personalNotesWebApplication.entities.UserEntity;
@@ -41,7 +42,6 @@ public class CalendarEventMapper {
 
         return new CalendarEventResponseDto(
             entity.getId(),
-            entity.getId().toString(),
             entity.getTitle(),
             entity.getDescription(),
             entity.getLocation(),
@@ -57,7 +57,7 @@ public class CalendarEventMapper {
         );
     }
 
-    public void updateEntityFromRequest(CalendarEventRequestDto request, CalendarEventEntity entity) {
+    public void updateEntityFromRequest(CalendarEventUpdateDto request, CalendarEventEntity entity) {
         if (request == null || entity == null) {
             return;
         }
@@ -80,7 +80,11 @@ public class CalendarEventMapper {
         if (request.googleCalendarId() != null) {
             entity.setGoogleCalendarId(request.googleCalendarId());
         }
-        entity.setGoogleSynced(request.isGoogleSynced());
-        entity.setAllDay(request.isAllDay());
+        if (request.isGoogleSynced() != null) {
+            entity.setGoogleSynced(request.isGoogleSynced());
+        }
+        if (request.isAllDay() != null) {
+            entity.setAllDay(request.isAllDay());
+        }
     }
 } 

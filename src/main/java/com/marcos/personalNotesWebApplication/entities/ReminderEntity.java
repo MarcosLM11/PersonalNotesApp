@@ -8,6 +8,7 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
+import java.util.Date;
 import java.util.UUID;
 
 @Getter
@@ -33,7 +34,7 @@ public class ReminderEntity {
 
     @NotNull
     @Column(name = "reminder_time", nullable = false)
-    private Instant reminderTime;
+    private Date reminderTime;
 
     @Column(name = "notification_type")
     @Enumerated(EnumType.STRING)
@@ -53,7 +54,7 @@ public class ReminderEntity {
     @PrePersist
     protected void onCreate() {
         if (reminderTime != null && event != null && 
-            reminderTime.isAfter(event.getStartTime())) {
+            reminderTime.after(event.getStartTime())) {
             throw new IllegalStateException("Reminder time must be before event start time");
         }
     }

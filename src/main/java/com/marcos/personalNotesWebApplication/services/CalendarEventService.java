@@ -1,6 +1,7 @@
 package com.marcos.personalNotesWebApplication.services;
 
 import com.marcos.personalNotesWebApplication.dtos.request.CalendarEventRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.CalendarEventUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.request.ReminderRequestDto;
 import com.marcos.personalNotesWebApplication.dtos.response.CalendarEventResponseDto;
 import com.marcos.personalNotesWebApplication.dtos.response.ReminderResponseDto;
@@ -45,7 +46,7 @@ public interface CalendarEventService {
      * @param request the calendar event request data transfer object containing updated event details
      * @return the updated calendar event response data transfer object
      */
-    CalendarEventResponseDto updateEvent(UUID id, @Valid CalendarEventRequestDto request);
+    CalendarEventResponseDto updateEvent(UUID id, @Valid CalendarEventUpdateDto request);
 
     /**
      * Deletes a calendar event by its ID.
@@ -85,13 +86,4 @@ public interface CalendarEventService {
      * @param reminderId the UUID of the reminder to delete
      */
     void deleteReminder(UUID eventId, UUID reminderId);
-
-    /**
-     * Checks if a user is the owner of an event.
-     *
-     * @param eventId the UUID of the calendar event
-     * @param username the username to check
-     * @return true if the user is the owner of the event, false otherwise
-     */
-    boolean isEventOwner(UUID eventId, String username);
 }
