@@ -1,6 +1,7 @@
 package com.marcos.personalNotesWebApplication.controllers;
 
 import com.marcos.personalNotesWebApplication.dtos.request.ReminderRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.ReminderUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.ReminderResponseDto;
 import com.marcos.personalNotesWebApplication.services.ReminderService;
 import jakarta.validation.Valid;
@@ -9,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,8 +41,8 @@ public class ReminderController {
 
     @GetMapping
     public ResponseEntity<List<ReminderResponseDto>> getAllReminders(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(reminderService.getAllReminders(startDate, endDate, page, size));
@@ -51,7 +52,7 @@ public class ReminderController {
     @PreAuthorize("@reminderService.isReminderOwner(#id, principal.username)")
     public ResponseEntity<ReminderResponseDto> updateReminder(
             @PathVariable UUID id,
-            @Valid @RequestBody ReminderRequestDto request) {
+            @Valid @RequestBody ReminderUpdateDto request) {
         return ResponseEntity.ok(reminderService.updateReminder(id, request));
     }
 
@@ -73,7 +74,6 @@ public class ReminderController {
 
     @GetMapping("/upcoming")
     public ResponseEntity<List<ReminderResponseDto>> getUpcomingReminders(
-
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(reminderService.getUpcomingReminders(page, size));

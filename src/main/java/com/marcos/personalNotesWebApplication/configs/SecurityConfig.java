@@ -26,6 +26,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/notes/**").permitAll() // Permitir acceso a notas públicas
                 .requestMatchers("/api/v1/calendar-events").permitAll()
                 .requestMatchers("/api/v1/calendar-events/**").permitAll()
+                .requestMatchers("/api/v1/reminders").permitAll() // Permitir acceso a recordatorios públicos
+                .requestMatchers("/api/v1/reminders/**").permitAll() // Permitir acceso a recordatorios públicos
                 .anyRequest().authenticated()
             )
             .httpBasic(basic -> {});

@@ -1,16 +1,20 @@
 package com.marcos.personalNotesWebApplication.exceptions;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import java.time.Instant;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
-    private Instant timestamp;
+    private LocalDateTime timestamp;
     private int status;
     private String error;
     private String message;
@@ -19,6 +23,8 @@ public class ErrorResponse {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ValidationError {
         private String field;
         private String message;

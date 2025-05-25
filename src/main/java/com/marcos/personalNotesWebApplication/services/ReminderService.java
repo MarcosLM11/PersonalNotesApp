@@ -1,9 +1,10 @@
 package com.marcos.personalNotesWebApplication.services;
 
 import com.marcos.personalNotesWebApplication.dtos.request.ReminderRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.ReminderUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.ReminderResponseDto;
 import jakarta.validation.Valid;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +35,7 @@ public interface ReminderService {
      * @param size the number of reminders per page
      * @return a list of reminder response data transfer objects
      */
-    List<ReminderResponseDto> getAllReminders(Instant startDate, Instant endDate, int page, int size);
+    List<ReminderResponseDto> getAllReminders(LocalDateTime startDate, LocalDateTime endDate, int page, int size);
 
     /**
      * Updates an existing reminder.
@@ -43,7 +44,7 @@ public interface ReminderService {
      * @param request the reminder request data transfer object containing updated reminder details
      * @return the updated reminder response data transfer object
      */
-    ReminderResponseDto updateReminder(UUID id, @Valid ReminderRequestDto request);
+    ReminderResponseDto updateReminder(UUID id, @Valid ReminderUpdateDto request);
 
     /**
      * Deletes a reminder by its ID.

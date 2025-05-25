@@ -1,6 +1,7 @@
 package com.marcos.personalNotesWebApplication.dtos.response;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record NoteVersionResponseDto(
@@ -8,6 +9,6 @@ public record NoteVersionResponseDto(
     UUID noteId,
     int version,
     String content,
-    Instant createdAt,
+    LocalDateTime createdAt,
     String createdBy
 ) {}

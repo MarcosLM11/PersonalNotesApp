@@ -1,19 +1,23 @@
 package com.marcos.personalNotesWebApplication.services.impl;
 
 import com.marcos.personalNotesWebApplication.dtos.request.ReminderRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.ReminderUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.ReminderResponseDto;
+import com.marcos.personalNotesWebApplication.entities.CalendarEventEntity;
 import com.marcos.personalNotesWebApplication.entities.ReminderEntity;
 import com.marcos.personalNotesWebApplication.entities.UserEntity;
 import com.marcos.personalNotesWebApplication.exceptions.ResourceNotFoundException;
+import com.marcos.personalNotesWebApplication.repositories.CalendarEventRepository;
 import com.marcos.personalNotesWebApplication.repositories.ReminderRepository;
 import com.marcos.personalNotesWebApplication.repositories.UserRepository;
 import com.marcos.personalNotesWebApplication.services.ReminderService;
 import com.marcos.personalNotesWebApplication.utils.IsNullOrEmptyUtil;
 import com.marcos.personalNotesWebApplication.mapper.ReminderMapper;
 import org.springframework.stereotype.Service;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.Collections;
 
 @Service
 public class ReminderServiceImpl implements ReminderService {
@@ -22,22 +26,32 @@ public class ReminderServiceImpl implements ReminderService {
     private final ReminderRepository reminderRepository;
     private final IsNullOrEmptyUtil isNullOrEmptyUtil;
     private final UserRepository userRepository;
+    private final CalendarEventRepository calendarEventRepository;
 
     public ReminderServiceImpl(ReminderMapper reminderMapper, ReminderRepository reminderRepository,
-                                IsNullOrEmptyUtil isNullOrEmptyUtil, UserRepository userRepository) {
+                               IsNullOrEmptyUtil isNullOrEmptyUtil, UserRepository userRepository, CalendarEventRepository calendarEventRepository) {
         this.reminderMapper = reminderMapper;
         this.reminderRepository = reminderRepository;
         this.isNullOrEmptyUtil = isNullOrEmptyUtil;
         this.userRepository = userRepository;
+        this.calendarEventRepository = calendarEventRepository;
     }
 
     @Override
     public ReminderResponseDto createReminder(ReminderRequestDto request) {
+        CalendarEventEntity event = calendarEventRepository.getReferenceById(request.eventId());
+
+        if (event == null) {
+            throw new ResourceNotFoundException("Calendar event not found with id: " + request.eventId());
+        }
+
         if (isNullOrEmptyUtil.isNullOrEmpty(request)) {
             throw new IllegalArgumentException("Reminder request cannot be null");
         }
-        var reminderEntity = reminderMapper.toEntity(request);
-        var savedEntity = reminderRepository.save(reminderEntity);
+
+        ReminderEntity reminderEntity = reminderMapper.toEntity(request);
+        reminderEntity.setEvent(event);
+        ReminderEntity savedEntity = reminderRepository.save(reminderEntity);
         return reminderMapper.toResponse(savedEntity);
     }
 
@@ -49,16 +63,20 @@ public class ReminderServiceImpl implements ReminderService {
     }
 
     @Override
-    public List<ReminderResponseDto> getAllReminders(Instant startDate, Instant endDate, int page, int size) {
-        List<ReminderEntity> reminders = reminderRepository.findAllByReminderTimeBetween(startDate, endDate);
-        if (isNullOrEmptyUtil.isNullOrEmpty(reminders)) {
-            throw new ResourceNotFoundException("No reminders found in the specified date range");
+    public List<ReminderResponseDto> getAllReminders(LocalDateTime startDate, LocalDateTime endDate, int page, int size) {
+        if (startDate == null && endDate == null) {
+            return reminderMapper.toResponseList(reminderRepository.findAll());
+        } else {
+            List<ReminderEntity> reminders = reminderRepository.findAllByReminderTimeBetween(
+                    startDate != null ? startDate : LocalDateTime.now(),
+                    endDate != null ? endDate : LocalDateTime.now().plusDays(7)
+            );
+            return reminderMapper.toResponseList(reminders);
         }
-        return reminderMapper.toResponseList(reminders);
     }
 
     @Override
-    public ReminderResponseDto updateReminder(UUID id, ReminderRequestDto request) {
+    public ReminderResponseDto updateReminder(UUID id, ReminderUpdateDto request) {
         if (isNullOrEmptyUtil.isNullOrEmpty(request)) {
             throw new IllegalArgumentException("Reminder request cannot be null");
         }
@@ -82,24 +100,20 @@ public class ReminderServiceImpl implements ReminderService {
     public List<ReminderResponseDto> getUserReminders(UUID userId, int page, int size) {
         UserEntity user = userRepository.findById(userId).orElseThrow(
                 () -> new ResourceNotFoundException("User not found with id: " + userId));
-        List<ReminderEntity> reminders = reminderRepository.findAllByCreatedBy(user.getUsername());
-
-        if (isNullOrEmptyUtil.isNullOrEmpty(reminders)) {
-            throw new ResourceNotFoundException("No reminders found for user: " + user.getUsername());
-        }
+        List<ReminderEntity> reminders = reminderRepository.findAllByCreatedBy(user.getId());
 
         return reminderMapper.toResponseList(reminders);
     }
 
     @Override
     public List<ReminderResponseDto> getUpcomingReminders(int page, int size) {
-        Instant now = Instant.now();
+        LocalDateTime now = LocalDateTime.now();
         List<ReminderEntity> reminders = reminderRepository.findAllByReminderTimeAfter(now);
-
-        if (isNullOrEmptyUtil.isNullOrEmpty(reminders)) {
-            throw new ResourceNotFoundException("No upcoming reminders found");
+        
+        if (reminders.isEmpty()) {
+            return Collections.emptyList();
         }
-
+        
         return reminderMapper.toResponseList(reminders);
     }
 

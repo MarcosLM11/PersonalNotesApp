@@ -10,7 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -61,7 +61,7 @@ public class UserEntity {
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
     @CreatedBy
     @Column(name = "created_by", nullable = false, updatable = false)
@@ -69,7 +69,7 @@ public class UserEntity {
 
     @LastModifiedDate
     @Column(name = "updated_at", nullable = true)
-    private Instant updatedAt;
+    private LocalDateTime updatedAt;
 
     @LastModifiedBy
     @Column(name = "updated_by", nullable = true)
@@ -84,7 +84,7 @@ public class UserEntity {
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
-            createdAt = Instant.now();
+            createdAt = LocalDateTime.now();
         }
         // Reset update fields on creation
         updatedAt = null;

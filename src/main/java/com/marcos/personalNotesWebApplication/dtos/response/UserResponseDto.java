@@ -1,5 +1,6 @@
 package com.marcos.personalNotesWebApplication.dtos.response;
-import java.time.Instant;
+
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record UserResponseDto (
@@ -9,6 +10,6 @@ public record UserResponseDto (
         String fullName,
         String phoneNumber,
         String profileImageUrl,
-        Instant createdAt,
-        Instant updatedAt
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {}

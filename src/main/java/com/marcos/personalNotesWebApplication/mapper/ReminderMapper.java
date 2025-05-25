@@ -1,6 +1,7 @@
 package com.marcos.personalNotesWebApplication.mapper;
 
 import com.marcos.personalNotesWebApplication.dtos.request.ReminderRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.ReminderUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.ReminderResponseDto;
 import com.marcos.personalNotesWebApplication.entities.ReminderEntity;
 import org.springframework.stereotype.Component;
@@ -47,7 +48,7 @@ public class ReminderMapper {
             .collect(Collectors.toList());
     }
 
-    public void updateEntityFromRequest(ReminderRequestDto request, ReminderEntity entity) {
+    public void updateEntityFromRequest(ReminderUpdateDto request, ReminderEntity entity) {
         if (request == null || entity == null) {
             return;
         }

@@ -1,6 +1,6 @@
 package com.marcos.personalNotesWebApplication.dtos.response;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,7 +12,7 @@ public record NoteResponseDto (
         String s3Url,
         String tags,
         boolean isPublic,
-        Instant createdAt,
-        Instant updatedAt,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt,
         List<NoteVersionResponseDto> versions
 ) {}

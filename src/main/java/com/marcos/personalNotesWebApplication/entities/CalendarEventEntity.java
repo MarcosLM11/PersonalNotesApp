@@ -4,14 +4,15 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,11 +42,11 @@ public class CalendarEventEntity {
 
     @NotNull
     @Column(name = "start_time", nullable = false)
-    private Date startTime;
+    private LocalDateTime startTime;
 
     @NotNull
     @Column(name = "end_time", nullable = false)
-    private Date endTime;
+    private LocalDateTime endTime;
 
     @Column(name = "google_calendar_id")
     private String googleCalendarId;
@@ -65,7 +66,7 @@ public class CalendarEventEntity {
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
     @CreatedBy
     @Column(name = "created_by", nullable = false, updatable = false)
@@ -73,7 +74,7 @@ public class CalendarEventEntity {
 
     @LastModifiedDate
     @Column(name = "updated_at")
-    private Instant updatedAt;
+    private LocalDateTime updatedAt;
 
     @LastModifiedBy
     @Column(name = "updated_by")
@@ -91,7 +92,7 @@ public class CalendarEventEntity {
 
     @PrePersist
     protected void onCreate() {
-        if (startTime != null && endTime != null && startTime.after(endTime)) {
+        if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
             throw new IllegalStateException("Start time must be before end time");
         }
     }

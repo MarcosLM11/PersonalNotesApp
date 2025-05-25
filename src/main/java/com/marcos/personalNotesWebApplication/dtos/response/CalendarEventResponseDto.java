@@ -1,7 +1,6 @@
 package com.marcos.personalNotesWebApplication.dtos.response;
 
-import java.time.Instant;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,13 +9,13 @@ public record CalendarEventResponseDto (
         String title,
         String description,
         String location,
-        Date startTime,
-        Date endTime,
+        LocalDateTime startTime,
+        LocalDateTime endTime,
         String googleCalendarId,
         boolean isGoogleSynced,
         boolean isAllDay,
         List<ReminderResponseDto> reminders,
-        Instant createdAt,
+        LocalDateTime createdAt,
         String createdBy,
-        Instant updatedAt
+        LocalDateTime updatedAt
 ) {}

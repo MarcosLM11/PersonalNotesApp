@@ -1,9 +1,6 @@
 package com.marcos.personalNotesWebApplication.dtos.request;
 
-import jakarta.persistence.TemporalType;
-import org.springframework.data.jpa.repository.Temporal;
-
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public record CalendarEventUpdateDto(
         String title,
@@ -12,9 +9,7 @@ public record CalendarEventUpdateDto(
         Boolean isAllDay,
         String googleCalendarId,
         Boolean isGoogleSynced,
-        @Temporal(TemporalType.TIMESTAMP)
-        Date startTime,
-        @Temporal(TemporalType.TIMESTAMP)
-        Date endTime
+        LocalDateTime startTime,
+        LocalDateTime endTime
 ) {
 }
