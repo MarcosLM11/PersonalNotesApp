@@ -1,22 +1,29 @@
 package com.marcos.personalNotesWebApplication.mapper;
 
 import com.marcos.personalNotesWebApplication.dtos.request.NoteRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.NoteUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.NoteResponseDto;
 import com.marcos.personalNotesWebApplication.dtos.response.NoteVersionResponseDto;
 import com.marcos.personalNotesWebApplication.entities.NoteEntity;
 import com.marcos.personalNotesWebApplication.entities.NoteVersionEntity;
+import com.marcos.personalNotesWebApplication.entities.UserEntity;
+import com.marcos.personalNotesWebApplication.repositories.UserRepository;
+import com.marcos.personalNotesWebApplication.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
 public class NoteMapper {
 
     private final UserMapper userMapper;
+    private final UserRepository userRepository;
 
-    public NoteMapper(UserMapper userMapper) {
+    public NoteMapper(UserMapper userMapper, UserRepository userRepository) {
         this.userMapper = userMapper;
+        this.userRepository = userRepository;
     }
 
     public NoteEntity toEntity(NoteRequestDto request) {
@@ -30,6 +37,12 @@ public class NoteMapper {
         entity.setTags(request.tags());
         entity.setPublic(request.isPublic());
         entity.setS3Url(request.s3Url());
+        
+        // Set the author
+        UserEntity author = userRepository.findById(UUID.fromString(request.authorId()))
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.authorId()));
+        entity.setAuthor(author);
+        
         return entity;
     }
 
@@ -52,7 +65,7 @@ public class NoteMapper {
         );
     }
 
-    public void updateEntityFromRequest(NoteRequestDto request, NoteEntity entity) {
+    public void updateEntityFromRequest(NoteUpdateDto request, NoteEntity entity) {
         if (request == null || entity == null) {
             return;
         }
@@ -66,33 +79,36 @@ public class NoteMapper {
         if (request.tags() != null) {
             entity.setTags(request.tags());
         }
+        if (request.isPublic() != entity.isPublic()) {
+            entity.setPublic(request.isPublic());
+        }
+        entity.setPublic(request.isPublic());
         if (request.s3Url() != null) {
             entity.setS3Url(request.s3Url());
         }
-        entity.setPublic(request.isPublic());
     }
 
-    public NoteVersionResponseDto toVersionResponse(NoteVersionEntity entity) {
-        if (entity == null) {
+    public NoteVersionResponseDto toVersionResponse(NoteVersionEntity versionEntity) {
+        if (versionEntity == null) {
             return null;
         }
 
         return new NoteVersionResponseDto(
-            entity.getId(),
-            entity.getVersion(),
-            entity.getContent(),
-            entity.getCreatedAt(),
-            entity.getCreatedBy()
+            versionEntity.getId(),
+            versionEntity.getNote().getId(),
+            versionEntity.getVersion(),
+            versionEntity.getContent(),
+            versionEntity.getCreatedAt(),
+            versionEntity.getCreatedBy()
         );
     }
 
-    public List<NoteVersionResponseDto> toVersionResponseList(List<NoteVersionEntity> entities) {
-        if (entities == null) {
+    private List<NoteVersionResponseDto> toVersionResponseList(List<NoteVersionEntity> versions) {
+        if (versions == null) {
             return Collections.emptyList();
         }
-
-        return entities.stream()
-            .map(this::toVersionResponse)
-            .collect(Collectors.toList());
+        return versions.stream()
+                .map(this::toVersionResponse)
+                .collect(Collectors.toList());
     }
 } 

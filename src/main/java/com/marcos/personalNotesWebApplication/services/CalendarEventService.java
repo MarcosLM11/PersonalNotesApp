@@ -85,4 +85,13 @@ public interface CalendarEventService {
      * @param reminderId the UUID of the reminder to delete
      */
     void deleteReminder(UUID eventId, UUID reminderId);
+
+    /**
+     * Checks if a user is the owner of an event.
+     *
+     * @param eventId the UUID of the calendar event
+     * @param username the username to check
+     * @return true if the user is the owner of the event, false otherwise
+     */
+    boolean isEventOwner(UUID eventId, String username);
 }

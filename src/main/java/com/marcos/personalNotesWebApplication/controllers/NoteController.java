@@ -1,6 +1,7 @@
 package com.marcos.personalNotesWebApplication.controllers;
 
 import com.marcos.personalNotesWebApplication.dtos.request.NoteRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.NoteUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.NoteResponseDto;
 import com.marcos.personalNotesWebApplication.dtos.response.NoteVersionResponseDto;
 import com.marcos.personalNotesWebApplication.services.NoteService;
@@ -48,7 +49,7 @@ public class NoteController {
     @PreAuthorize("@noteService.isNoteOwner(#id, principal.username)")
     public ResponseEntity<NoteResponseDto> updateNote(
             @PathVariable UUID id,
-            @Valid @RequestBody NoteRequestDto request) {
+            @Valid @RequestBody NoteUpdateDto request) {
         return ResponseEntity.ok(noteService.updateNote(id, request));
     }
 

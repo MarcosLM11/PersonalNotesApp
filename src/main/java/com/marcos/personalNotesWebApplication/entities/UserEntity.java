@@ -68,15 +68,28 @@ public class UserEntity {
     private String createdBy;
 
     @LastModifiedDate
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = true)
     private Instant updatedAt;
 
     @LastModifiedBy
-    @Column(name = "updated_by")
+    @Column(name = "updated_by", nullable = true)
     private String updatedBy;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<NoteEntity> notes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CalendarEventEntity> events = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = Instant.now();
+        }
+        // Reset update fields on creation
+        updatedAt = null;
+        updatedBy = null;
+    }
 
     public void addNote(NoteEntity note) {
         notes.add(note);
@@ -86,5 +99,15 @@ public class UserEntity {
     public void removeNote(NoteEntity note) {
         notes.remove(note);
         note.setAuthor(null);
+    }
+
+    public void addEvent(CalendarEventEntity event) {
+        events.add(event);
+        event.setUser(this);
+    }
+
+    public void removeEvent(CalendarEventEntity event) {
+        events.remove(event);
+        event.setUser(null);
     }
 }

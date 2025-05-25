@@ -21,7 +21,6 @@ A robust and secure web application for managing personal notes, tasks, and even
   - Spring Actuator for application monitoring
 - **PostgreSQL** as the database
 - **Resilience4j** for circuit breaking and fault tolerance
-- **MapStruct** for object mapping
 - **Lombok** for reducing boilerplate code
 - **Maven** for dependency management and build automation
 

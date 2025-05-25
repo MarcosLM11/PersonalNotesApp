@@ -57,4 +57,9 @@ public class ReminderEntity {
             throw new IllegalStateException("Reminder time must be before event start time");
         }
     }
+
+    // Helper method to get the user through the event
+    public UserEntity getUser() {
+        return event != null ? event.getUser() : null;
+    }
 }

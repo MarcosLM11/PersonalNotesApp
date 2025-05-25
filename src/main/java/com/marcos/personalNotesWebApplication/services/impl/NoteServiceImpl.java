@@ -1,6 +1,7 @@
 package com.marcos.personalNotesWebApplication.services.impl;
 
 import com.marcos.personalNotesWebApplication.dtos.request.NoteRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.NoteUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.NoteResponseDto;
 import com.marcos.personalNotesWebApplication.dtos.response.NoteVersionResponseDto;
 import com.marcos.personalNotesWebApplication.entities.NoteEntity;
@@ -58,7 +59,7 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public NoteResponseDto updateNote(UUID id, NoteRequestDto request) {
+    public NoteResponseDto updateNote(UUID id, NoteUpdateDto request) {
         if (isNullOrEmptyUtil.isNullOrEmpty(request)) {
             throw new IllegalArgumentException("Note request cannot be null");
         }
@@ -92,10 +93,6 @@ public class NoteServiceImpl implements NoteService {
         NoteEntity noteEntity = noteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Note not found with id: " + id));
         List<NoteVersionEntity> latestVersion = noteVersionRepository.findByNote(noteEntity);
-
-        if (isNullOrEmptyUtil.isNullOrEmpty(latestVersion)) {
-            throw new ResourceNotFoundException("No versions found for note with id: " + id);
-        }
         return latestVersion.stream().map(noteMapper::toVersionResponse).toList();
     }
 }

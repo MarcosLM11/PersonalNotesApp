@@ -3,6 +3,7 @@ package com.marcos.personalNotesWebApplication.mapper;
 import com.marcos.personalNotesWebApplication.dtos.request.CalendarEventRequestDto;
 import com.marcos.personalNotesWebApplication.dtos.response.CalendarEventResponseDto;
 import com.marcos.personalNotesWebApplication.entities.CalendarEventEntity;
+import com.marcos.personalNotesWebApplication.entities.UserEntity;
 import org.springframework.stereotype.Component;
 import java.util.Collections;
 
@@ -15,7 +16,7 @@ public class CalendarEventMapper {
         this.reminderMapper = reminderMapper;
     }
 
-    public CalendarEventEntity toEntity(CalendarEventRequestDto request) {
+    public CalendarEventEntity toEntity(CalendarEventRequestDto request, UserEntity user) {
         if (request == null) {
             return null;
         }
@@ -29,6 +30,7 @@ public class CalendarEventMapper {
         entity.setGoogleCalendarId(request.googleCalendarId());
         entity.setGoogleSynced(request.isGoogleSynced());
         entity.setAllDay(request.isAllDay());
+        entity.setUser(user);
         return entity;
     }
 
@@ -39,7 +41,7 @@ public class CalendarEventMapper {
 
         return new CalendarEventResponseDto(
             entity.getId(),
-            entity.getEventId(),
+            entity.getId().toString(),
             entity.getTitle(),
             entity.getDescription(),
             entity.getLocation(),

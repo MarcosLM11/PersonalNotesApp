@@ -1,6 +1,8 @@
 package com.marcos.personalNotesWebApplication.controllers;
 
 import com.marcos.personalNotesWebApplication.dtos.request.UserRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.PasswordChangeRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.UserUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.UserResponseDto;
 import com.marcos.personalNotesWebApplication.services.UserService;
 import jakarta.validation.Valid;
@@ -45,8 +47,16 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(
             @PathVariable UUID id,
-            @Valid @RequestBody UserRequestDto request) {
+            @Valid @RequestBody UserUpdateDto request) {
         return ResponseEntity.ok(userService.updateUser(id, request));
+    }
+
+    @PutMapping("/{id}/password")
+    public ResponseEntity<Void> changePassword(
+            @PathVariable UUID id,
+            @Valid @RequestBody PasswordChangeRequestDto request) {
+        userService.changePassword(id, request);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

@@ -19,9 +19,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "calendar_events")
-@Table(name = "calendar_events", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"event_id", "user_id"})
-})
+@Table(name = "calendar_events")
 @EntityListeners(AuditingEntityListener.class)
 public class CalendarEventEntity {
     
@@ -29,14 +27,6 @@ public class CalendarEventEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
-
-    @NotBlank
-    @Column(name = "event_id", nullable = false)
-    private String eventId;
-
-    @NotBlank
-    @Column(name = "user_id", nullable = false)
-    private String userId;
 
     @NotBlank
     @Column(name = "title", nullable = false)
@@ -64,6 +54,10 @@ public class CalendarEventEntity {
 
     @Column(name = "is_all_day", nullable = false)
     private boolean isAllDay = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ReminderEntity> reminders = new ArrayList<>();

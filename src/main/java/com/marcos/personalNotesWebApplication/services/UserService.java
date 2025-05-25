@@ -1,6 +1,8 @@
 package com.marcos.personalNotesWebApplication.services;
 
 import com.marcos.personalNotesWebApplication.dtos.request.UserRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.PasswordChangeRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.UserUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.UserResponseDto;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -41,7 +43,7 @@ public interface UserService {
      * @param request the user request data transfer object containing updated user details
      * @return the updated user response data transfer object
      */
-    UserResponseDto updateUser(UUID id, @Valid UserRequestDto request);
+    UserResponseDto updateUser(UUID id, @Valid UserUpdateDto request);
 
     /**
      * Deletes a user by their ID.
@@ -49,4 +51,12 @@ public interface UserService {
      * @param id the UUID of the user to delete
      */
     void deleteUser(UUID id);
+
+    /**
+     * Changes the password for a user.
+     *
+     * @param id the UUID of the user
+     * @param passwordChangeRequest the password change request containing the current and new password
+     */
+    void changePassword(UUID id, @Valid PasswordChangeRequestDto passwordChangeRequest);
 }

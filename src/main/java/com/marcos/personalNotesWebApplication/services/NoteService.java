@@ -1,6 +1,7 @@
 package com.marcos.personalNotesWebApplication.services;
 
 import com.marcos.personalNotesWebApplication.dtos.request.NoteRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.NoteUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.NoteResponseDto;
 import com.marcos.personalNotesWebApplication.dtos.response.NoteVersionResponseDto;
 import jakarta.validation.Valid;
@@ -42,7 +43,7 @@ public interface NoteService {
      * @param request the note request data transfer object containing updated note details
      * @return the updated note response data transfer object
      */
-    NoteResponseDto updateNote(UUID id, @Valid NoteRequestDto request);
+    NoteResponseDto updateNote(UUID id, @Valid NoteUpdateDto request);
 
     /**
      * Deletes a note by its ID.

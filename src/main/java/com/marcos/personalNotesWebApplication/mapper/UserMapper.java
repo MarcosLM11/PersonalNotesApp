@@ -1,6 +1,7 @@
 package com.marcos.personalNotesWebApplication.mapper;
 
 import com.marcos.personalNotesWebApplication.dtos.request.UserRequestDto;
+import com.marcos.personalNotesWebApplication.dtos.request.UserUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.UserResponseDto;
 import com.marcos.personalNotesWebApplication.entities.UserEntity;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,7 @@ public class UserMapper {
         );
     }
 
-    public void updateEntityFromRequest(UserRequestDto request, UserEntity entity) {
+    public void updateEntityFromRequest(UserUpdateDto request, UserEntity entity) {
         if (request == null || entity == null) {
             return;
         }
@@ -50,9 +51,6 @@ public class UserMapper {
         }
         if (request.email() != null) {
             entity.setEmail(request.email());
-        }
-        if (request.password() != null) {
-            entity.setPassword(request.password());
         }
         if (request.fullName() != null) {
             entity.setFullName(request.fullName());
