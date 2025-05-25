@@ -15,17 +15,10 @@ import org.springframework.web.filter.CorsFilter;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CorsFilter corsFilter;
-
-    public SecurityConfig(CorsFilter corsFilter) {
-        this.corsFilter = corsFilter;
-    }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
-            .addFilterBefore(corsFilter, BasicAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/users").permitAll()  // Permitir registro de usuarios
                 .requestMatchers("/api/v1/users/**").permitAll()
