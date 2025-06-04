@@ -17,7 +17,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "notes")
-@Table(name = "notes")
+@Table(name = "notes", indexes = {
+    @Index(name = "idx_notes_author_id", columnList = "author_id"),
+    @Index(name = "idx_notes_created_at", columnList = "created_at"),
+    @Index(name = "idx_notes_updated_at", columnList = "updated_at"),
+    @Index(name = "idx_notes_is_public", columnList = "is_public"),
+    @Index(name = "idx_notes_author_created", columnList = "author_id, created_at"),
+    @Index(name = "idx_notes_public_created", columnList = "is_public, created_at")
+})
 @EntityListeners(AuditingEntityListener.class)
 public class NoteEntity {
 

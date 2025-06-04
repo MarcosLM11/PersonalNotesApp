@@ -6,6 +6,8 @@ import com.marcos.personalNotesWebApplication.dtos.response.NoteResponseDto;
 import com.marcos.personalNotesWebApplication.dtos.response.NoteVersionResponseDto;
 import com.marcos.personalNotesWebApplication.services.NoteService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,7 +41,7 @@ public class NoteController {
     }
 
     @GetMapping
-    public ResponseEntity<List<NoteResponseDto>> getAllNotes(
+    public ResponseEntity<Page<NoteResponseDto>> getAllNotes(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy) {
@@ -63,11 +65,28 @@ public class NoteController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<NoteResponseDto>> getNotesByUser(
+    public ResponseEntity<Page<NoteResponseDto>> getNotesByUser(
             @PathVariable UUID userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(noteService.getNotesByUser(userId, page, size));
+    }
+
+    @GetMapping("/user/{userId}/slice")
+    public ResponseEntity<Slice<NoteResponseDto>> getNotesByUserSlice(
+            @PathVariable UUID userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(noteService.getNotesByUserSlice(userId, page, size));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<NoteResponseDto>> searchNotes(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy) {
+        return ResponseEntity.ok(noteService.searchNotes(q, page, size, sortBy));
     }
 
     @GetMapping("/{id}/versions")
