@@ -5,6 +5,8 @@ import com.marcos.personalNotesWebApplication.dtos.request.PasswordChangeRequest
 import com.marcos.personalNotesWebApplication.dtos.request.UserUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.UserResponseDto;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +36,7 @@ public interface UserService {
      * @param sortBy the field to sort by
      * @return a list of user response data transfer objects
      */
-    List<UserResponseDto> getAllUsers(int page, int size, String sortBy);
+    Page<UserResponseDto> getAllUsers(int page, int size, String sortBy);
 
     /**
      * Updates an existing user.

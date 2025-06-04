@@ -9,11 +9,12 @@ import com.marcos.personalNotesWebApplication.exceptions.ResourceNotFoundExcepti
 import com.marcos.personalNotesWebApplication.exceptions.UnauthorizedAccessException;
 import com.marcos.personalNotesWebApplication.repositories.UserRepository;
 import com.marcos.personalNotesWebApplication.services.UserService;
-import com.marcos.personalNotesWebApplication.utils.IsNullOrEmptyUtil;
 import com.marcos.personalNotesWebApplication.mapper.UserMapper;
+import com.marcos.personalNotesWebApplication.utils.PageableUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -21,15 +22,15 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final UserRepository userRepository;
-    private final IsNullOrEmptyUtil isNullOrEmptyUtil;
     private final PasswordEncoder passwordEncoder;
+    private final PageableUtils pageableUtils;
 
     public UserServiceImpl(UserMapper userMapper, UserRepository userRepository,
-                           IsNullOrEmptyUtil isNullOrEmptyUtil, PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder, PageableUtils pageableUtils) {
         this.userMapper = userMapper;
         this.userRepository = userRepository;
-        this.isNullOrEmptyUtil = isNullOrEmptyUtil;
         this.passwordEncoder = passwordEncoder;
+        this.pageableUtils = pageableUtils;
     }
 
     @Override
@@ -50,11 +51,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseDto> getAllUsers(int page, int size, String sortBy) {
-        List<UserEntity> users = userRepository.findAll(); // Implement pagination and sorting as needed
-        return users.stream()
-                .map(userMapper::toResponse)
-                .toList();
+    public Page<UserResponseDto> getAllUsers(int page, int size, String sortBy) {
+        Pageable pageable = pageableUtils.createPageable(page, size, sortBy);
+        Page<UserEntity> usersPage = userRepository.findAll(pageable); // Implement pagination and sorting as needed
+        return usersPage.map(userMapper::toResponse);
     }
 
     @Override

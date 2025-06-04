@@ -6,7 +6,6 @@ import com.marcos.personalNotesWebApplication.dtos.response.NoteResponseDto;
 import com.marcos.personalNotesWebApplication.dtos.response.NoteVersionResponseDto;
 import com.marcos.personalNotesWebApplication.entities.NoteEntity;
 import com.marcos.personalNotesWebApplication.entities.NoteVersionEntity;
-import com.marcos.personalNotesWebApplication.entities.UserEntity;
 import com.marcos.personalNotesWebApplication.exceptions.ResourceNotFoundException;
 import com.marcos.personalNotesWebApplication.repositories.NoteRepository;
 import com.marcos.personalNotesWebApplication.repositories.NoteVersionRepository;
@@ -14,11 +13,11 @@ import com.marcos.personalNotesWebApplication.repositories.UserRepository;
 import com.marcos.personalNotesWebApplication.services.NoteService;
 import com.marcos.personalNotesWebApplication.utils.IsNullOrEmptyUtil;
 import com.marcos.personalNotesWebApplication.mapper.NoteMapper;
+import com.marcos.personalNotesWebApplication.utils.PageableUtils;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -31,19 +30,16 @@ public class NoteServiceImpl implements NoteService {
     private final IsNullOrEmptyUtil isNullOrEmptyUtil;
     private final NoteVersionRepository noteVersionRepository;
     private final UserRepository userRepository;
-
-    // Configuración por defecto para paginación
-    private static final int MAX_PAGE_SIZE = 100;
-    private static final String DEFAULT_SORT_FIELD = "createdAt";
-    private static final Sort.Direction DEFAULT_SORT_DIRECTION = Sort.Direction.DESC;
+    private final PageableUtils pageableUtils;
 
     public NoteServiceImpl(NoteRepository noteRepository, NoteMapper noteMapper, IsNullOrEmptyUtil isNullOrEmptyUtil,
-                           NoteVersionRepository noteVersionRepository, UserRepository userRepository) {
+                           NoteVersionRepository noteVersionRepository, UserRepository userRepository, PageableUtils pageableUtils) {
         this.noteRepository = noteRepository;
         this.noteMapper = noteMapper;
         this.isNullOrEmptyUtil = isNullOrEmptyUtil;
         this.noteVersionRepository = noteVersionRepository;
         this.userRepository = userRepository;
+        this.pageableUtils = pageableUtils;
     }
 
     @Override
@@ -68,12 +64,8 @@ public class NoteServiceImpl implements NoteService {
     @Override
     @Transactional(readOnly = true)
     public Page<NoteResponseDto> getAllNotes(int page, int size, String sortBy) {
-        // Validar y ajustar parámetros de paginación
-        Pageable pageable = createPageable(page, size, sortBy);
-        
+        Pageable pageable = pageableUtils.createPageable(page, size, sortBy);
         Page<NoteEntity> notePage = noteRepository.findAll(pageable);
-        
-        // Mapear entidades a DTOs manteniendo la información de paginación
         return notePage.map(noteMapper::toResponse);
     }
 
@@ -110,7 +102,7 @@ public class NoteServiceImpl implements NoteService {
             throw new ResourceNotFoundException("User not found with id: " + userId);
         }
 
-        Pageable pageable = createPageable(page, size, DEFAULT_SORT_FIELD);
+        Pageable pageable = pageableUtils.createPageable(page, size, pageableUtils.DEFAULT_SORT_FIELD);
         Page<NoteEntity> notePage = noteRepository.findByAuthorId(userId, pageable);
         
         return notePage.map(noteMapper::toResponse);
@@ -124,7 +116,7 @@ public class NoteServiceImpl implements NoteService {
             throw new ResourceNotFoundException("User not found with id: " + userId);
         }
 
-        Pageable pageable = createPageable(page, size, DEFAULT_SORT_FIELD);
+        Pageable pageable = pageableUtils.createPageable(page, size, pageableUtils.DEFAULT_SORT_FIELD);
         Slice<NoteEntity> noteSlice = noteRepository.findByAuthorIdOrderByCreatedAtDesc(userId, pageable);
         
         return noteSlice.map(noteMapper::toResponse);
@@ -137,7 +129,7 @@ public class NoteServiceImpl implements NoteService {
             throw new IllegalArgumentException("Search term cannot be empty");
         }
 
-        Pageable pageable = createPageable(page, size, sortBy);
+        Pageable pageable = pageableUtils.createPageable(page, size, sortBy);
         Page<NoteEntity> notePage = noteRepository.searchNotes(searchTerm.trim(), pageable);
         
         return notePage.map(noteMapper::toResponse);
@@ -158,25 +150,6 @@ public class NoteServiceImpl implements NoteService {
         return noteRepository.findById(noteId)
                 .map(note -> note.getAuthor().getUsername().equals(username))
                 .orElse(false);
-    }
-
-    /**
-     * Crea un objeto Pageable validando y limitando los parámetros.
-     */
-    private Pageable createPageable(int page, int size, String sortBy) {
-        // Validar página
-        int validPage = Math.max(0, page);
-        
-        // Limitar y validar tamaño de página
-        int validSize = Math.min(Math.max(1, size), MAX_PAGE_SIZE);
-        
-        // Validar campo de ordenación
-        String validSortBy = StringUtils.hasText(sortBy) ? sortBy : DEFAULT_SORT_FIELD;
-        
-        // Crear el sort con dirección por defecto
-        Sort sort = Sort.by(DEFAULT_SORT_DIRECTION, validSortBy);
-        
-        return PageRequest.of(validPage, validSize, sort);
     }
 
     /**

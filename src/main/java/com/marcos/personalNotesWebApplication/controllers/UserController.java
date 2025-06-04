@@ -6,6 +6,7 @@ import com.marcos.personalNotesWebApplication.dtos.request.UserUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.UserResponseDto;
 import com.marcos.personalNotesWebApplication.services.UserService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,7 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponseDto>> getAllUsers(
+    public ResponseEntity<Page<UserResponseDto>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "username") String sortBy) {
