@@ -4,6 +4,7 @@ import com.marcos.personalNotesWebApplication.dtos.request.CalendarEventRequestD
 import com.marcos.personalNotesWebApplication.dtos.request.CalendarEventUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.request.ReminderRequestDto;
 import com.marcos.personalNotesWebApplication.dtos.response.CalendarEventResponseDto;
+import com.marcos.personalNotesWebApplication.dtos.response.PageResponseDto;
 import com.marcos.personalNotesWebApplication.dtos.response.ReminderResponseDto;
 import com.marcos.personalNotesWebApplication.services.CalendarEventService;
 import jakarta.validation.Valid;
@@ -42,12 +43,14 @@ public class CalendarEventController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CalendarEventResponseDto>> getAllEvents(
+    public ResponseEntity<PageResponseDto<CalendarEventResponseDto>> getAllEvents(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endDate,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(calendarEventService.getAllEvents(startDate, endDate, page, size));
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "startTime") String sortBy) {
+        var eventPage = calendarEventService.getAllEvents(startDate, endDate, page, size, sortBy);
+        return ResponseEntity.ok(PageResponseDto.from(eventPage));
     }
 
     @PutMapping("/{id}")

@@ -16,8 +16,9 @@ import com.marcos.personalNotesWebApplication.services.CalendarEventService;
 import com.marcos.personalNotesWebApplication.mapper.CalendarEventMapper;
 import com.marcos.personalNotesWebApplication.utils.IsNullOrEmptyUtil;
 import com.marcos.personalNotesWebApplication.mapper.ReminderMapper;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import com.marcos.personalNotesWebApplication.utils.PageableUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
@@ -33,18 +34,22 @@ public class CalendarEventServiceImpl implements CalendarEventService {
     private final ReminderMapper reminderMapper;
     private final UserRepository userRepository;
     private final ReminderRepository reminderRepository;
+    private final PageableUtils pageableUtils;
 
     public CalendarEventServiceImpl(CalendarEventRepository calendarEventRepository,
                                     CalendarEventMapper calendarEventMapper,
                                     IsNullOrEmptyUtil isNullOrEmptyUtil,
                                     ReminderMapper reminderMapper,
-                                    UserRepository userRepository, ReminderRepository reminderRepository) {
+                                    UserRepository userRepository, 
+                                    ReminderRepository reminderRepository,
+                                    PageableUtils pageableUtils) {
         this.calendarEventRepository = calendarEventRepository;
         this.calendarEventMapper = calendarEventMapper;
         this.isNullOrEmptyUtil = isNullOrEmptyUtil;
         this.reminderMapper = reminderMapper;
         this.userRepository = userRepository;
         this.reminderRepository = reminderRepository;
+        this.pageableUtils = pageableUtils;
     }
 
     @Override
@@ -64,22 +69,18 @@ public class CalendarEventServiceImpl implements CalendarEventService {
     }
 
     @Override
-    public List<CalendarEventResponseDto> getAllEvents(Instant startDate, Instant endDate, int page, int size) {
-        var pageable = PageRequest.of(page, size, Sort.by("startTime").ascending());
+    public Page<CalendarEventResponseDto> getAllEvents(Instant startDate, Instant endDate, int page, int size, String sortBy) {
+        Pageable pageable = pageableUtils.createPageable(page, size, sortBy);
 
+        Page<CalendarEventEntity> eventPage;
+        
         if (isNullOrEmptyUtil.isNullOrEmpty(startDate) && isNullOrEmptyUtil.isNullOrEmpty(endDate)) {
-            return calendarEventRepository.findAll(pageable)
-                    .getContent()
-                    .stream()
-                    .map(calendarEventMapper::toResponse)
-                    .toList();
+            eventPage = calendarEventRepository.findAll(pageable);
         } else {
-            return calendarEventRepository.findAllByStartTimeBetween(startDate, endDate, pageable)
-                    .getContent()
-                    .stream()
-                    .map(calendarEventMapper::toResponse)
-                    .toList();
+            eventPage = calendarEventRepository.findAllByStartTimeBetween(startDate, endDate, pageable);
         }
+        
+        return eventPage.map(calendarEventMapper::toResponse);
     }
 
     @Override
@@ -157,5 +158,12 @@ public class CalendarEventServiceImpl implements CalendarEventService {
         event.removeReminder(reminder);
         calendarEventRepository.save(event);
         reminderRepository.delete(reminder);
+    }
+
+    @Override
+    public boolean isEventOwner(UUID eventId, String username) {
+        return calendarEventRepository.findById(eventId)
+                .map(event -> event.getUser().getUsername().equals(username))
+                .orElse(false);
     }
 }

@@ -13,11 +13,15 @@ import com.marcos.personalNotesWebApplication.repositories.UserRepository;
 import com.marcos.personalNotesWebApplication.services.ReminderService;
 import com.marcos.personalNotesWebApplication.utils.IsNullOrEmptyUtil;
 import com.marcos.personalNotesWebApplication.mapper.ReminderMapper;
+import com.marcos.personalNotesWebApplication.utils.PageableUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
-import java.util.Collections;
 
 @Service
 public class ReminderServiceImpl implements ReminderService {
@@ -27,23 +31,22 @@ public class ReminderServiceImpl implements ReminderService {
     private final IsNullOrEmptyUtil isNullOrEmptyUtil;
     private final UserRepository userRepository;
     private final CalendarEventRepository calendarEventRepository;
+    private final PageableUtils pageableUtils;
 
     public ReminderServiceImpl(ReminderMapper reminderMapper, ReminderRepository reminderRepository,
-                               IsNullOrEmptyUtil isNullOrEmptyUtil, UserRepository userRepository, CalendarEventRepository calendarEventRepository) {
+                               IsNullOrEmptyUtil isNullOrEmptyUtil, UserRepository userRepository,
+                               CalendarEventRepository calendarEventRepository, PageableUtils pageableUtils) {
         this.reminderMapper = reminderMapper;
         this.reminderRepository = reminderRepository;
         this.isNullOrEmptyUtil = isNullOrEmptyUtil;
         this.userRepository = userRepository;
         this.calendarEventRepository = calendarEventRepository;
+        this.pageableUtils = pageableUtils;
     }
 
     @Override
     public ReminderResponseDto createReminder(ReminderRequestDto request) {
         CalendarEventEntity event = calendarEventRepository.getReferenceById(request.eventId());
-
-        if (event == null) {
-            throw new ResourceNotFoundException("Calendar event not found with id: " + request.eventId());
-        }
 
         if (isNullOrEmptyUtil.isNullOrEmpty(request)) {
             throw new IllegalArgumentException("Reminder request cannot be null");
@@ -63,16 +66,19 @@ public class ReminderServiceImpl implements ReminderService {
     }
 
     @Override
-    public List<ReminderResponseDto> getAllReminders(LocalDateTime startDate, LocalDateTime endDate, int page, int size) {
+    public Page<ReminderResponseDto> getAllReminders(LocalDateTime startDate, LocalDateTime endDate, int page, int size, String sortBy) {
+        Pageable pageable = pageableUtils.createPageable(page, size, sortBy);
+        
+        Page<ReminderEntity> remindersPage;
         if (startDate == null && endDate == null) {
-            return reminderMapper.toResponseList(reminderRepository.findAll());
+            remindersPage = reminderRepository.findAll(pageable);
         } else {
-            List<ReminderEntity> reminders = reminderRepository.findAllByReminderTimeBetween(
-                    startDate != null ? startDate : LocalDateTime.now(),
-                    endDate != null ? endDate : LocalDateTime.now().plusDays(7)
-            );
-            return reminderMapper.toResponseList(reminders);
+            LocalDateTime start = startDate != null ? startDate : LocalDateTime.now();
+            LocalDateTime end = endDate != null ? endDate : LocalDateTime.now().plusDays(7);
+            remindersPage = reminderRepository.findAllByReminderTimeBetween(start, end, pageable);
         }
+        
+        return remindersPage.map(reminderMapper::toResponse);
     }
 
     @Override
@@ -97,24 +103,42 @@ public class ReminderServiceImpl implements ReminderService {
     }
 
     @Override
-    public List<ReminderResponseDto> getUserReminders(UUID userId, int page, int size) {
+    public Page<ReminderResponseDto> getUserReminders(UUID userId, int page, int size, String sortBy) {
         UserEntity user = userRepository.findById(userId).orElseThrow(
                 () -> new ResourceNotFoundException("User not found with id: " + userId));
-        List<ReminderEntity> reminders = reminderRepository.findAllByCreatedBy(user.getId());
-
-        return reminderMapper.toResponseList(reminders);
+        
+        Pageable pageable = pageableUtils.createPageable(page, size, sortBy);
+        Page<ReminderEntity> remindersPage = reminderRepository.findAllByUserId(userId, pageable);
+        
+        return remindersPage.map(reminderMapper::toResponse);
     }
 
     @Override
-    public List<ReminderResponseDto> getUpcomingReminders(int page, int size) {
+    public Slice<ReminderResponseDto> getUserRemindersSlice(UUID userId, int page, int size) {
+        UserEntity user = userRepository.findById(userId).orElseThrow(
+                () -> new ResourceNotFoundException("User not found with id: " + userId));
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "reminderTime"));
+        Slice<ReminderEntity> remindersSlice = reminderRepository.findAllByUserIdSlice(userId, pageable);
+        
+        return remindersSlice.map(reminderMapper::toResponse);
+    }
+
+    @Override
+    public Page<ReminderResponseDto> getUpcomingReminders(int page, int size, String sortBy) {
         LocalDateTime now = LocalDateTime.now();
-        List<ReminderEntity> reminders = reminderRepository.findAllByReminderTimeAfter(now);
+        Pageable pageable = pageableUtils.createPageable(page, size, sortBy);
+        Page<ReminderEntity> remindersPage = reminderRepository.findAllByReminderTimeAfter(now, pageable);
         
-        if (reminders.isEmpty()) {
-            return Collections.emptyList();
-        }
+        return remindersPage.map(reminderMapper::toResponse);
+    }
+
+    @Override
+    public Page<ReminderResponseDto> searchReminders(String query, int page, int size, String sortBy) {
+        Pageable pageable = pageableUtils.createPageable(page, size, sortBy);
+        Page<ReminderEntity> remindersPage = reminderRepository.searchByEventTitleOrDescription(query, pageable);
         
-        return reminderMapper.toResponseList(reminders);
+        return remindersPage.map(reminderMapper::toResponse);
     }
 
     @Override
@@ -125,5 +149,10 @@ public class ReminderServiceImpl implements ReminderService {
         reminderEntity.setSent(true);
         ReminderEntity updatedEntity = reminderRepository.save(reminderEntity);
         return reminderMapper.toResponse(updatedEntity);
+    }
+
+    @Override
+    public boolean isReminderOwner(UUID reminderId, String username) {
+        return reminderRepository.existsByIdAndUsername(reminderId, username);
     }
 }

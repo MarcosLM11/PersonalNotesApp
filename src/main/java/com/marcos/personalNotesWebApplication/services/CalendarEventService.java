@@ -6,6 +6,7 @@ import com.marcos.personalNotesWebApplication.dtos.request.ReminderRequestDto;
 import com.marcos.personalNotesWebApplication.dtos.response.CalendarEventResponseDto;
 import com.marcos.personalNotesWebApplication.dtos.response.ReminderResponseDto;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -35,9 +36,10 @@ public interface CalendarEventService {
      * @param endDate the end date of the range
      * @param page the page number to retrieve
      * @param size the number of events per page
-     * @return a list of calendar event response data transfer objects
+     * @param sortBy the field to sort by
+     * @return a page of calendar event response data transfer objects
      */
-    List<CalendarEventResponseDto> getAllEvents(Instant startDate, Instant endDate, int page, int size);
+    Page<CalendarEventResponseDto> getAllEvents(Instant startDate, Instant endDate, int page, int size, String sortBy);
 
     /**
      * Updates an existing calendar event.
@@ -79,6 +81,15 @@ public interface CalendarEventService {
      * @return a list of reminder response data transfer objects
      */
     List<ReminderResponseDto> getEventReminders(UUID eventId);
+
+    /**
+     * Checks if the authenticated user is the owner of the specified event.
+     *
+     * @param eventId the UUID of the event
+     * @param username the username of the authenticated user
+     * @return true if the user is the owner, false otherwise
+     */
+    boolean isEventOwner(UUID eventId, String username);
 
     /**
      * Deletes a reminder from a calendar event.

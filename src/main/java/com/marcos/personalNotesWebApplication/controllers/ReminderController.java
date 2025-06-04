@@ -5,13 +5,14 @@ import com.marcos.personalNotesWebApplication.dtos.request.ReminderUpdateDto;
 import com.marcos.personalNotesWebApplication.dtos.response.ReminderResponseDto;
 import com.marcos.personalNotesWebApplication.services.ReminderService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -40,12 +41,13 @@ public class ReminderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ReminderResponseDto>> getAllReminders(
+    public ResponseEntity<Page<ReminderResponseDto>> getAllReminders(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(reminderService.getAllReminders(startDate, endDate, page, size));
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "reminderTime") String sortBy) {
+        return ResponseEntity.ok(reminderService.getAllReminders(startDate, endDate, page, size, sortBy));
     }
 
     @PutMapping("/{id}")
@@ -65,18 +67,37 @@ public class ReminderController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ReminderResponseDto>> getUserReminders(
+    public ResponseEntity<Page<ReminderResponseDto>> getUserReminders(
+            @PathVariable UUID userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "reminderTime") String sortBy) {
+        return ResponseEntity.ok(reminderService.getUserReminders(userId, page, size, sortBy));
+    }
+
+    @GetMapping("/user/{userId}/slice")
+    public ResponseEntity<Slice<ReminderResponseDto>> getUserRemindersSlice(
             @PathVariable UUID userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(reminderService.getUserReminders(userId, page, size));
+        return ResponseEntity.ok(reminderService.getUserRemindersSlice(userId, page, size));
     }
 
     @GetMapping("/upcoming")
-    public ResponseEntity<List<ReminderResponseDto>> getUpcomingReminders(
+    public ResponseEntity<Page<ReminderResponseDto>> getUpcomingReminders(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(reminderService.getUpcomingReminders(page, size));
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "reminderTime") String sortBy) {
+        return ResponseEntity.ok(reminderService.getUpcomingReminders(page, size, sortBy));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<ReminderResponseDto>> searchReminders(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "reminderTime") String sortBy) {
+        return ResponseEntity.ok(reminderService.searchReminders(q, page, size, sortBy));
     }
 
     @PatchMapping("/{id}/complete")
@@ -85,4 +106,4 @@ public class ReminderController {
             @PathVariable UUID id) {
         return ResponseEntity.ok(reminderService.markReminderAsCompleted(id));
     }
-} 
+}
