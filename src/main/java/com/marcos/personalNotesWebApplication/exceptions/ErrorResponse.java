@@ -19,7 +19,10 @@ public class ErrorResponse {
     private String error;
     private String message;
     private String path;
+    private String code; // Error code for client-side handling
+    private String traceId; // For distributed tracing
     private List<ValidationError> validationErrors;
+    private Object details; // Additional error details
 
     @Data
     @Builder
