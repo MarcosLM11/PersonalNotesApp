@@ -10,10 +10,13 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -25,8 +28,8 @@ import java.util.UUID;
     @UniqueConstraint(columnNames = "email")
 })
 @EntityListeners(AuditingEntityListener.class)
-public class UserEntity {
-    
+public class UserEntity implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
@@ -58,6 +61,23 @@ public class UserEntity {
 
     @Column(name = "profile_image_url")
     private String profileImageUrl;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
+    private Set<String> roles = new HashSet<>();
+
+    @Column(name = "is_account_non_expired")
+    private boolean isAccountNonExpired = true;
+
+    @Column(name = "is_account_non_locked")
+    private boolean isAccountNonLocked = true;
+
+    @Column(name = "is_credentials_non_expired")
+    private boolean isCredentialsNonExpired = true;
+
+    @Column(name = "is_enabled")
+    private boolean isEnabled = true;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -109,5 +129,33 @@ public class UserEntity {
     public void removeEvent(CalendarEventEntity event) {
         events.remove(event);
         event.setUser(null);
+    }
+
+    // Implementación de métodos de UserDetails
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return isAccountNonExpired;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return isAccountNonLocked;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return isCredentialsNonExpired;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return isEnabled;
     }
 }
