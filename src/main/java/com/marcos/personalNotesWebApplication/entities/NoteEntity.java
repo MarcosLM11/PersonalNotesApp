@@ -48,10 +48,6 @@ public class NoteEntity {
     @Column(name = "s3_url")
     private String s3Url;
 
-    @Size(max = 500)
-    @Column(name = "tags")
-    private String tags;
-
     @Column(name = "is_public", nullable = false)
     private boolean isPublic = false;
 
@@ -64,7 +60,50 @@ public class NoteEntity {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<NoteTagEntity> noteTags = new ArrayList<>();
+
+    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<NoteVersionEntity> versions = new ArrayList<>();
+
+    public void addTag(TagEntity tag) {
+        NoteTagEntity noteTag = NoteTagEntity.builder()
+                .note(this)
+                .tag(tag)
+                .build();
+
+        noteTags.add(noteTag);
+        tag.getNoteTags().add(noteTag);
+        tag.incrementUsageCount();
+    }
+
+    public void removeTag(TagEntity tag) {
+        noteTags.removeIf(noteTag -> {
+            if (noteTag.getTag().equals(tag)) {
+                tag.getNoteTags().remove(noteTag);
+                tag.decrementUsageCount();
+                return true;
+            }
+            return false;
+        });
+    }
+
+    public List<TagEntity> getTags() {
+        return noteTags.stream()
+                .map(NoteTagEntity::getTag)
+                .toList();
+    }
+
+    public List<String> getTagNames() {
+        return noteTags.stream()
+                .map(noteTag -> noteTag.getTag().getName())
+                .sorted()
+                .toList();
+    }
+
+    public boolean hasTag(String tagName) {
+        return noteTags.stream()
+                .anyMatch(noteTag -> noteTag.getTag().getName().equalsIgnoreCase(tagName));
+    }
 
     public void addVersion(NoteVersionEntity version) {
         versions.add(version);

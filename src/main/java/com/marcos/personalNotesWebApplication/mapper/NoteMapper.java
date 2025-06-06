@@ -34,7 +34,6 @@ public class NoteMapper {
         NoteEntity entity = new NoteEntity();
         entity.setTitle(request.title());
         entity.setContent(request.content());
-        entity.setTags(request.tags());
         entity.setPublic(request.isPublic());
         entity.setS3Url(request.s3Url());
         
@@ -42,6 +41,9 @@ public class NoteMapper {
         UserEntity author = userRepository.findById(UUID.fromString(request.authorId()))
             .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.authorId()));
         entity.setAuthor(author);
+        
+        // Note: Tags will be handled separately by the service layer
+        // as they require additional processing to create/find TagEntity objects
         
         return entity;
     }
@@ -51,13 +53,17 @@ public class NoteMapper {
             return null;
         }
 
+        // Convert tag names to comma-separated string
+        String tagsString = entity.getTagNames().isEmpty() ? 
+            null : String.join(", ", entity.getTagNames());
+
         return new NoteResponseDto(
             entity.getId(),
             entity.getTitle(),
             entity.getContent(),
             entity.getAuthor() != null ? userMapper.toResponse(entity.getAuthor()) : null,
             entity.getS3Url(),
-            entity.getTags(),
+            tagsString,
             entity.isPublic(),
             entity.getCreatedAt(),
             entity.getUpdatedAt(),
@@ -76,16 +82,14 @@ public class NoteMapper {
         if (request.content() != null) {
             entity.setContent(request.content());
         }
-        if (request.tags() != null) {
-            entity.setTags(request.tags());
-        }
-        if (request.isPublic() != entity.isPublic()) {
-            entity.setPublic(request.isPublic());
-        }
+        // Update public status (no need to check if different, just set it)
         entity.setPublic(request.isPublic());
         if (request.s3Url() != null) {
             entity.setS3Url(request.s3Url());
         }
+        
+        // Note: Tags update will be handled separately by the service layer
+        // as it requires additional processing to create/find TagEntity objects
     }
 
     public NoteVersionResponseDto toVersionResponse(NoteVersionEntity versionEntity) {
@@ -111,4 +115,20 @@ public class NoteMapper {
                 .map(this::toVersionResponse)
                 .collect(Collectors.toList());
     }
-} 
+    
+    /**
+     * Helper method to extract tags from a comma-separated string
+     * @param tagsString comma-separated string of tag names
+     * @return List of trimmed tag names
+     */
+    public List<String> extractTagNames(String tagsString) {
+        if (tagsString == null || tagsString.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        return java.util.Arrays.stream(tagsString.split(","))
+                .map(String::trim)
+                .filter(tag -> !tag.isEmpty())
+                .collect(Collectors.toList());
+    }
+}
